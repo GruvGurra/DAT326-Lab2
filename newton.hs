@@ -17,34 +17,36 @@ instance AddGroup a => AddGroup (Tri a) where
 
 instance (Additive a, Multiplicative a) => Multiplicative (Tri a) where
         (*) = mulTri -- TODO: Maybe not how we're supposed to multiply triples
-        one = (one, one, one)
+        one = (one, zero, zero)
 mulTri :: (Multiplicative a, Additive a) => Tri a -> Tri a -> Tri a
-mulTri (a,b,c) (x,y,z) = (a*x,b*y,c*z)
+mulTri (f,f',f'') (g,g',g'') = (f*g, f'*g+f*g', f''*g + f'*g' + f'*g' + f*g'')
+-- (fg)' = f'g+fg'
+-- (fg)'' = (f'g+fg')' = (f'g)' + (fg') = (f''g) + (f'g') + (f'g') + (fg'')
 
 instance (AddGroup a, MulGroup a) => MulGroup (Tri a) where
         recip (a,b,c) = (recip a, recip b, recip c)
 
 instance Transcendental a => Transcendental (Tri a) where
         pi = (pi, pi, pi)
-        sin (a,b,c) = (sin a, sin b, sin c)
-        cos (a,b,c) = (cos a, cos b, cos c)
-        exp (a,b,c) = (exp a, exp b, exp c)
+        sin (f,f',f'') = (sin f, f' * cos f, f''') -- WRONG
+        cos (f,f',f'') = (cos f, f' * negate sin f, f' * f' * negate cos f) -- WRONG
+        exp (f,f',f'') = (exp f, f' * exp f, f''*exp f + f' * f' * exp f)
 
 test1 x = (cos x)^2 + (sin x)^2
--- C
-evalDD :: Transcendental a => FunExp -> Tri a
-evalDD (Const n) = (pain, pain, pain)
-        where pain = fromRational (toRational n)-- i hate this
-evalDD (e1 :+: e2) = evalDD e1 + evalDD e2
-evalDD (e1 :*: e2) = evalDD e1 * evalDD e2
-evalDD (Recip e)      =  recip (evalDD e)
-evalDD (Negate e)     =  negate (evalDD e)
-evalDD (Exp e)        =  exp (evalDD e)      -- = exp . (eval e) !
-evalDD (Sin e)        =  sin (evalDD e)
-evalDD (Cos e)        =  cos (evalDD e)
 
--- PART 2
-type R = Double
-newton :: (Tri R -> Tri R) -> R -> R -> R
-newton  f e x = error "TODO"
+-- Part 2
+type FunTri a = (Tri a -> Tri a)
+-- evalDD is a homomorphism
+evalDD :: Transcendental a => FunExp -> FunTri a
+evalDD (Const c) = \_ -> (fromRational(toRational c),zero,zero)
+evalDD X = \(x, x', x'') -> (x, x', x'')
+evalDD (f :+: g) = \t -> (evalDD f t) + (evalDD g t)
+evalDD (f :*: g) = \t -> (evalDD f t) * (evalDD g t)
+evalDD (Recip f) = \t -> recip t
+evalDD (Negate f) = \t -> negate t
+evalDD (Sin f) = \t -> sin t
+evalDD (Cos f) = \t -> cos t
+evalDD (Exp f) = \t -> exp t
 
+waov = (Const 2) :*: X
+-- evalDD(e1 * e2) === evalDD(d1) * evalDD(e2)
