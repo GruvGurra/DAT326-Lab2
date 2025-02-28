@@ -30,6 +30,21 @@ instance Transcendental a => Transcendental (Tri a) where
         cos (a,b,c) = (cos a, cos b, cos c)
         exp (a,b,c) = (exp a, exp b, exp c)
 
--- PART 1 
+test1 x = (cos x)^2 + (sin x)^2
 -- C
-evalDD = error "TODO"
+evalDD :: Transcendental a => FunExp -> Tri a
+evalDD (Const n) = (pain, pain, pain)
+        where pain = fromRational (toRational n)-- i hate this
+evalDD (e1 :+: e2) = evalDD e1 + evalDD e2
+evalDD (e1 :*: e2) = evalDD e1 * evalDD e2
+evalDD (Recip e)      =  recip (evalDD e)
+evalDD (Negate e)     =  negate (evalDD e)
+evalDD (Exp e)        =  exp (evalDD e)      -- = exp . (eval e) !
+evalDD (Sin e)        =  sin (evalDD e)
+evalDD (Cos e)        =  cos (evalDD e)
+
+-- PART 2
+type R = Double
+newton :: (Tri R -> Tri R) -> R -> R -> R
+newton  f e x = error "TODO"
+
