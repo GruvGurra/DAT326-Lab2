@@ -27,26 +27,28 @@ instance (AddGroup a, MulGroup a) => MulGroup (Tri a) where
         recip (a,b,c) = (recip a, recip b, recip c)
 
 instance Transcendental a => Transcendental (Tri a) where
-        pi = (pi, pi, pi)
-        sin (f,f',f'') = (sin f, f' * cos f, f''') -- WRONG
-        cos (f,f',f'') = (cos f, f' * negate sin f, f' * f' * negate cos f) -- WRONG
+        pi = (pi, zero, zero)
+        sin (f,f',f'') = (sin f, f' * cos f, f'' * cos f + negate f' * f' * sin f)
+        cos (f,f',f'') = (cos f, negate f' * sin f, negate (cos f) * f' * f' + negate (sin f) * f'')
         exp (f,f',f'') = (exp f, f' * exp f, f''*exp f + f' * f' * exp f)
 
 test1 x = (cos x)^2 + (sin x)^2
 
 -- Part 2
-type FunTri a = (Tri a -> Tri a)
+type FunTri a = (a  -> Tri a)
 -- evalDD is a homomorphism
 evalDD :: Transcendental a => FunExp -> FunTri a
 evalDD (Const c) = \_ -> (fromRational(toRational c),zero,zero)
-evalDD X = \(x, x', x'') -> (x, x', x'')
-evalDD (f :+: g) = \t -> (evalDD f t) + (evalDD g t)
-evalDD (f :*: g) = \t -> (evalDD f t) * (evalDD g t)
-evalDD (Recip f) = \t -> recip t
-evalDD (Negate f) = \t -> negate t
-evalDD (Sin f) = \t -> sin t
-evalDD (Cos f) = \t -> cos t
-evalDD (Exp f) = \t -> exp t
+evalDD X = \x -> (x, one, zero)
+evalDD (f :+: g) = \x -> (evalDD f x) + (evalDD g x)
+evalDD (f :*: g) = \x -> (evalDD f x) * (evalDD g x)
+evalDD (Recip f) = \x -> recip $ evalDD f x
+evalDD (Negate f) = \x -> negate $ evalDD f x
+evalDD (Sin f) = \x -> sin $ evalDD f x
+evalDD (Cos f) = \x -> cos $ evalDD f x
+evalDD (Exp f) = \x -> exp $ evalDD f x
 
 waov = (Const 2) :*: X
 -- evalDD(e1 * e2) === evalDD(d1) * evalDD(e2)
+--
+-- evalDD(f) = (f, f', f'')
