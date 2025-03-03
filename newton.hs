@@ -66,15 +66,20 @@ type R = Double
 newton :: (Tri R -> Tri R) -> R -> R -> [R]
 newton f e x = iNewton 100 f e x
 
+-- terminate after n iterations
 iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
 iNewton 0 _ _ x = [x];
 iNewton n f e x = if      abs fx < e then [x]
                   else if fx' /= 0   then x : iNewton (n-1) f e next
-                  else                    x : iNewton (n-1) f e (x + e) where
-        (fx, fx', _) = f (x,x,x)
+                       else               x : iNewton (n-1) f e (x + e) where
+        (fx, fx', _) = f (x,1,0)
         next = x - (fx / fx')
         
 test0 x = x^2
 test1 x = x^2 - one
 test2 x = sin x
-test3 n x y = y^n - (x,x,x)
+test3 n x y = y^n - (x,0,0)
+
+-- PART 3, THE FINAL BOSS
+optim :: (Tri R -> Tri R) -> R -> R -> Result R
+optim f e x = error "TODO"
