@@ -32,7 +32,7 @@ instance Transcendental a => Transcendental (Tri a) where
         cos (f,f',f'') = (cos f, negate f' * sin f, negate (cos f) * f' * f' + negate (sin f) * f'')
         exp (f,f',f'') = (exp f, f' * exp f, f''*exp f + f' * f' * exp f)
 
-test1 x = (cos x)^2 + (sin x)^2
+cossintest x = (cos x)^2 + (sin x)^2
 
 type FunTri a = (a  -> Tri a)
 evalDD :: Transcendental a => FunExp -> FunTri a
@@ -60,3 +60,21 @@ evalDD (Exp f) = \x -> exp $ evalDD f x
 -- Instead it becomes (f,f',f'') * (g,g',g'') =
 -- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
 -- evalDD is thus a homomorphism for multiplication
+
+-- Part 2
+type R = Double
+newton :: (Tri R -> Tri R) -> R -> R -> [R]
+newton f e x = iNewton 100 f e x
+
+iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
+iNewton 0 _ _ x = [x];
+iNewton n f e x = if      abs fx < e then [x]
+                  else if fx' /= 0   then x : iNewton (n-1) f e next
+                  else                    x : iNewton (n-1) f e (x + e) where
+        (fx, fx', _) = f (x,x,x)
+        next = x - (fx / fx')
+        
+test0 x = x^2
+test1 x = x^2 - one
+test2 x = sin x
+test3 n x y = y^n - (x,x,x)
