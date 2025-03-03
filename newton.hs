@@ -34,9 +34,7 @@ instance Transcendental a => Transcendental (Tri a) where
 
 test1 x = (cos x)^2 + (sin x)^2
 
--- Part 2
 type FunTri a = (a  -> Tri a)
--- evalDD is a homomorphism
 evalDD :: Transcendental a => FunExp -> FunTri a
 evalDD (Const c) = \_ -> (fromRational(toRational c),zero,zero)
 evalDD X = \x -> (x, one, zero)
@@ -48,7 +46,17 @@ evalDD (Sin f) = \x -> sin $ evalDD f x
 evalDD (Cos f) = \x -> cos $ evalDD f x
 evalDD (Exp f) = \x -> exp $ evalDD f x
 
-waov = (Const 2) :*: X
--- evalDD(e1 * e2) === evalDD(d1) * evalDD(e2)
+-- test2 :: Transcendental a => FunExp -> FunExp -> a -> Bool
+-- test2 f g x = evalDD (f * g) x == evalDD (f) x * evalDD (g) x
+
+-- Part 1 D
+-- evalDD(f) returns the tuple of functions (f,f',f'') of x
+-- let's say we have evalDD(f * g). We want to prove that evalDD(f * g) = evalDD (f) * evalDD (g)
+-- through the product rule we can get evalDD(f * g) = 
+-- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
 --
--- evalDD(f) = (f, f', f'')
+-- evalDD(f) * evalDD (g), intuitively this would become (f*g, f'*g', f''*g'')
+-- However this does not happen due to how Tri multiplication is defined!
+-- Instead it becomes (f,f',f'') * (g,g',g'') =
+-- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
+-- evalDD is thus a homomorphism for multiplication
