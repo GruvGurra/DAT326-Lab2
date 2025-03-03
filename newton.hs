@@ -77,22 +77,24 @@ iNewton n f e x | abs fx < e = [x]
                  next = x - (fx / fx')
         
 test0 x = x^2
-test1 x = x^2 - one
+test1 x = x^2 + one
 test2 x = sin x
 test3 n x y = y^n - (x,0,0)
+test4 x = x^3 + x
+test5 x = negate (x^2)
 
 data Result a = Maximum a | Minimum a | Inflection a | Dunno a deriving (Show, Eq)
 -- PART 3, THE FINAL BOSS
 optim :: (Tri R -> Tri R) -> R -> R -> Result R
 optim f e x
-        | abs y < e && abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y
-        | fy'' < 0 = Maximum y
-        | fy'' > 0 = Minimum y
+        -- | abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y
+        | abs fy' < e && fy'' < 0 = Maximum y
+        | abs fy' < e && fy'' > 0 = Minimum y
         | otherwise = Dunno x
         where
          woo = derTrip f
          y = last $ newton woo e x
-         (_,_,fy'') = f (y,1,0)
+         (_,fy',fy'') = f (y,1,0)
          (_,_,fyL'') = f (y-e,1,0)
          (_,_,fyR'') = f(y+e,1,0)
 
