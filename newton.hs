@@ -83,7 +83,7 @@ test3 n x y = y^n - (x,0,0)
 test4 x = x^3 + x
 test5 x = negate (x^2)
 
-data Result a = Maximum a | Minimum a | Inflection a | Dunno a deriving (Show, Eq)
+data Result a = Maximum a | Minimum a | Dunno a deriving (Show, Eq)
 -- PART 3, THE FINAL BOSS
 optim :: (Tri R -> Tri R) -> R -> R -> Result R
 optim f e x
