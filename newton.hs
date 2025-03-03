@@ -16,7 +16,7 @@ instance AddGroup a => AddGroup (Tri a) where
         negate (a,b,c) = (negate a, negate b, negate c)
 
 instance (Additive a, Multiplicative a) => Multiplicative (Tri a) where
-        (*) = mulTri -- TODO: Maybe not how we're supposed to multiply triples
+        (*) = mulTri
         one = (one, zero, zero)
 mulTri :: (Multiplicative a, Additive a) => Tri a -> Tri a -> Tri a
 mulTri (f,f',f'') (g,g',g'') = (f*g, f'*g+f*g', f''*g + f'*g' + f'*g' + f*g'')
@@ -69,17 +69,32 @@ newton f e x = iNewton 100 f e x
 -- terminate after n iterations
 iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
 iNewton 0 _ _ x = [x];
-iNewton n f e x = if      abs fx < e then [x]
-                  else if fx' /= 0   then x : iNewton (n-1) f e next
-                       else               x : iNewton (n-1) f e (x + e) where
-        (fx, fx', _) = f (x,1,0)
-        next = x - (fx / fx')
+iNewton n f e x | abs fx < e = [x]
+                | fx' /= 0 = x : iNewton (n-1) f e next
+                | otherwise = x : iNewton (n-1) f e (x+e)
+                where
+                 (fx, fx', _) = f (x,1,0)
+                 next = x - (fx / fx')
         
 test0 x = x^2
 test1 x = x^2 - one
 test2 x = sin x
 test3 n x y = y^n - (x,0,0)
 
+data Result a = Maximum a | Minimum a | Inflection a | Dunno a deriving (Show, Eq)
 -- PART 3, THE FINAL BOSS
 optim :: (Tri R -> Tri R) -> R -> R -> Result R
-optim f e x = error "TODO"
+optim f e x
+        | abs y < e && abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y
+        | fy'' < 0 = Maximum y
+        | fy'' > 0 = Minimum y
+        | otherwise = Dunno x
+        where
+         woo = derTrip f
+         y = last $ newton woo e x
+         (_,_,fy'') = f (y,1,0)
+         (_,_,fyL'') = f (y-e,1,0)
+         (_,_,fyR'') = f(y+e,1,0)
+
+derTrip :: (Tri R -> Tri R) -> (Tri R -> Tri R)
+derTrip f = \t -> let (a,a',a'') = f t in (a', a'', error "!!!")
