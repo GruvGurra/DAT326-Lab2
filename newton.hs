@@ -1,3 +1,9 @@
+-- Lab Group A2 4
+-- Members:
+-- Albin Bergh
+-- Erik Larsson
+-- Ludvig Hammarstedt
+
 import DSLsofMath.Algebra
 import DSLsofMath.FunExp
 import Prelude hiding (  (+), (-), (*), (/), negate, recip, (^),
@@ -52,26 +58,27 @@ evalDD (Exp f) = \x -> exp $ evalDD f x
 -- Part 1 D
 -- evalDD(f) returns the tuple of functions (f,f',f'') of x
 -- let's say we have evalDD(f * g). We want to prove that evalDD(f * g) = evalDD (f) * evalDD (g)
--- through the product rule we can get evalDD(f * g) = 
--- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
+-- through the product rule we can get 
+-- evalDD(f * g) = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
 --
 -- evalDD(f) * evalDD (g), intuitively this would become (f*g, f'*g', f''*g'')
 -- However this does not happen due to how Tri multiplication is defined!
 -- Instead it becomes (f,f',f'') * (g,g',g'') =
 -- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
+-- which is equal to evalDD(f * g)
 -- evalDD is thus a homomorphism for multiplication
 
 -- Part 2
 type R = Double
-newton :: (Tri R -> Tri R) -> R -> R -> [R]
+newton :: (Tri R -> Tri R) -> R -> R -> R
 newton f e x = iNewton 100 f e x
 
 -- terminate after n iterations
-iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
-iNewton 0 _ _ x = [x];
-iNewton n f e x | abs fx < e = [x]
-                | fx' /= 0 = x : iNewton (n-1) f e next
-                | otherwise = x : iNewton (n-1) f e (x+e)
+iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> R
+iNewton 0 _ _ x = x;
+iNewton n f e x | abs fx < e = x
+                | fx' /= 0 = iNewton (n-1) f e next
+                | otherwise = iNewton (n-1) f e (x+e)
                 where
                  (fx, fx', _) = f (x,1,0)
                  next = x - (fx / fx')
@@ -83,20 +90,36 @@ test3 n x y = y^n - (x,0,0)
 test4 x = x^3 + x
 test5 x = negate (x^2)
 
+-- PART 3
 data Result a = Maximum a | Minimum a | Dunno a deriving (Show, Eq)
--- PART 3, THE FINAL BOSS
 optim :: (Tri R -> Tri R) -> R -> R -> Result R
 optim f e x
-        -- | abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y
         | abs fy' < e && fy'' < 0 = Maximum y
         | abs fy' < e && fy'' > 0 = Minimum y
         | otherwise = Dunno x
         where
-         woo = derTrip f
-         y = last $ newton woo e x
+         f' = derTrip f
+         y = newton f' e x
          (_,fy',fy'') = f (y,1,0)
-         (_,_,fyL'') = f (y-e,1,0)
-         (_,_,fyR'') = f(y+e,1,0)
+         
+         -- | abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y -- no work :(
+         --(_,_,fyL'') = f (y-e,1,0)
+         --(_,_,fyR'') = f(y+e,1,0)
 
 derTrip :: (Tri R -> Tri R) -> (Tri R -> Tri R)
 derTrip f = \t -> let (a,a',a'') = f t in (a', a'', error "!!!")
+
+
+-- Debug variant of newton that returns a list instead
+dnewton :: (Tri R -> Tri R) -> R -> R -> [R]
+dnewton f e x = diNewton 100 f e x
+
+-- terminate after n iterations
+diNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
+diNewton 0 _ _ x = [x];
+diNewton n f e x | abs fx < e = [x]
+                | fx' /= 0 = x : diNewton (n-1) f e next
+                | otherwise = x : diNewton (n-1) f e (x+e)
+                where
+                 (fx, fx', _) = f (x,1,0)
+                 next = x - (fx / fx')
