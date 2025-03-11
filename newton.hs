@@ -109,7 +109,7 @@ newton f e x = iNewton 100 f e x
 
 -- terminate after n iterations
 iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> R
-iNewton 0 _ _ x = x; -- panic instead, and print the x value
+iNewton 0 _ _ x = error ("didn't reach anything, ended at " ++ (show x));
 iNewton n f e x | abs fx < e = x
                 | fx' /= 0 = iNewton (n-1) f e next
                 | otherwise = iNewton (n-1) f e (x+e)
@@ -135,13 +135,9 @@ optim f e x
          f' = derTrip f
          y = newton f' e x
          (_,fy',fy'') = f (y,1,0)
-         
-         -- | abs fy'' < e && (fyL'' * fyR'') < 0 = Inflection y -- no work :(
-         --(_,_,fyL'') = f (y-e,1,0)
-         --(_,_,fyR'') = f(y+e,1,0)
 
 derTrip :: (Tri R -> Tri R) -> (Tri R -> Tri R)
-derTrip f = \t -> let (a,a',a'') = f t in (a', a'', error "!!!")
+derTrip f = \t -> let (a,a',a'') = f t in (a', a'', error "Do not touch!")
 
 
 -- Debug variant of newton that returns a list instead
