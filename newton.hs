@@ -30,7 +30,10 @@ mulTri (f,f',f'') (g,g',g'') = (f*g, f'*g+f*g', f''*g + f'*g' + f'*g' + f*g'')
 -- (fg)'' = (f'g+fg')' = (f'g)' + (fg') = (f''g) + (f'g') + (f'g') + (fg'')
 
 instance (AddGroup a, MulGroup a) => MulGroup (Tri a) where
-        recip (a,b,c) = (recip a, recip b, recip c)
+        recip (f,f',f'') = 
+                let rf = recip f 
+                in (recip f, negate f' * rf*rf, (f'*f'+f'*f' - f * f'') * rf*rf*rf)
+                -- (1/f, -f'/f^2, (2f'^2 - f*f'')/f^3)
 
 instance Transcendental a => Transcendental (Tri a) where
         pi = (pi, zero, zero)
@@ -75,12 +78,12 @@ newton f e x = iNewton 100 f e x
 
 -- terminate after n iterations
 iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> R
-iNewton 0 _ _ x = x;
+iNewton 0 _ _ x = x; -- panic instead, and print the x value
 iNewton n f e x | abs fx < e = x
                 | fx' /= 0 = iNewton (n-1) f e next
                 | otherwise = iNewton (n-1) f e (x+e)
                 where
-                 (fx, fx', _) = f (x,1,0)
+                 (fx, fx', _) = f (x,1,0) -- apply f to the identity function at x
                  next = x - (fx / fx')
         
 test0 x = x^2
