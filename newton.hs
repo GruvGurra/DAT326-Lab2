@@ -9,6 +9,37 @@ import DSLsofMath.FunExp
 import Prelude hiding (  (+), (-), (*), (/), negate, recip, (^),
                          pi, sin, cos, exp, fromInteger, fromRational)
 -- PART 1
+-- A
+-- P(h) = h is a homomorphism from FunExp to FunSem = R -> R
+-- P(h) = h is a homomorphism from FunExp to (R -> R)
+-- a homomorphism h: FunExp -> R -> R would preserve structure,
+-- meaning that h(op(args)) = op_sem(h(args))
+-- since we know all the operations on R, we can rewrite P(h) to 
+-- P(h) = all of these are true:  h(a * b) = Mul h(a) h(b)
+--                                h(a + b) = Add h(a) h(b)
+--                                h(1/a) =   Recip h(a)
+--                                h(sin(a))= Sin(h(a))
+--                                h(cos(a))= Cos(h(a))
+--                                h(e^a)   = Exp h(a)
+--  (maybe some operations were forgotten but it doesn't matter in the end)
+--
+-- So, for h to be a homomorphism, it must satisfy h(op(args)) = op_sem(h(args)) for each constructor in funexp
+-- 
+-- Now to proving that not P(eval'') is true.
+-- If any of the operators don't support the homomorphism, the claim P(eval'') fails and 
+-- not P(eval'') becomes true
+-- So we just need to show a counterexample
+-- eval''= eval (deriv (deriv))
+-- So for eval'' to be a homomorphism for multiplication we need the following to be true
+-- eval''(a*b) = eval (deriv(deriv(a*b))) = eval(deriv(deriv(a))) * eval(deriv(deriv(b)))
+-- let's try eval''(x * x^2)
+-- Left hand side: deriv(deriv(x * x^2)) = x^2 + x*2x = x^2+2x^2=3x^2
+-- So it becomes: eval(3x^2)
+-- Right hand side: deriv(x) = 1. deriv(x^2) = 2x
+-- So it becomes eval(1) + eval(2x), which is trivially not equivalent to eval(3x^2) because 
+-- it contains a constant 1
+
+
 -- B
 type Tri a = (a, a, a)
 
