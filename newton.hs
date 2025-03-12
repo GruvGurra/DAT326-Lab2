@@ -27,12 +27,10 @@ import Prelude hiding
 -- P(h) = h is a homomorphism from FunExp to FunSem = R -> R
 -- P(h) = h is a homomorphism from FunExp to (R -> R)
 -- a homomorphism h: FunExp -> R -> R would preserve structure,
--- meaning that h(op(args)) = op_sem(h(args))
 -- since we know all the operations on FunSem (R -> R) and all their corresponding operators on FunExp,
--- P(h) can be rewritten as: Every constructor op in FunExp should have a corresponding semantic operator
+-- P(h) can be rewritten as: Every constructor op called on the argument/arguments args in FunExp should have a corresponding semantic operator
 -- in FunSem such that h(op(args)) = op_sem(h(args))
 --
---  (maybe some operations were forgotten but it doesn't matter in the end)
 --  Expressed in logic this would be
 --  P(h) = ∀c ∈ ℝ.     h(Const c) = ConstSem(c)
 --       ∧ h(Var)      = VarSem
@@ -42,7 +40,7 @@ import Prelude hiding
 --       ∧ ∀e.         h(Sin e)    = SinSem(h(e))
 --       ∧ ∀e.         h(Cos e)    = CosSem(h(e))
 --       ∧ ∀e.         h(Exp e)    = ExpSem(h(e))
---      (maybe some operator was forgotten but the idea is still valid)
+--      (maybe some operator was forgotten but the idea is still valid, and it doesn't matter for our end result)
 --
 -- Less abstractly this can also be written as
 --  P(h) = ∀c ∈ ℝ.     h(Const c) = Const c     # confusing but the right Const is \_ -> c while the left is a constructor
@@ -139,6 +137,11 @@ evalDD (Exp f) = \x -> exp $ evalDD f x
 -- = (f * g, f'*g + f*g', f''*g + 2*f'*g' + f*g'')
 -- which is equal to evalDD(f * g)
 -- evalDD is thus a homomorphism for multiplication
+--
+-- Alternatively you could say that evalDD is inherently a homomorphism due to
+-- how we defined it.
+-- Since our definition of evalDD says that evalDD (f * g) = evalDD(f) * evalDD(g).
+-- Which is the requirement for being a homomorphism for multiplication
 
 -- Part 2
 type R = Double
@@ -148,7 +151,7 @@ newton f e x = iNewton 100 f e x
 
 -- terminate after n iterations
 iNewton :: Int -> (Tri R -> Tri R) -> R -> R -> R
-iNewton 0 _ _ x = error ("didn't reach anything, ended at " ++ (show x))
+iNewton 0 _ _ x = error ("didn't reach anything, ended at " ++ show x)
 iNewton n f e x
   | abs fx < e = x
   | fx' /= 0 = iNewton (n - 1) f e next
@@ -184,18 +187,3 @@ optim f e x
 
 derTrip :: (Tri R -> Tri R) -> (Tri R -> Tri R)
 derTrip f = \t -> let (a, a', a'') = f t in (a', a'', error "Do not touch!")
-
--- Debug variant of newton that returns a list instead
-dnewton :: (Tri R -> Tri R) -> R -> R -> [R]
-dnewton f e x = diNewton 100 f e x
-
--- terminate after n iterations
-diNewton :: Int -> (Tri R -> Tri R) -> R -> R -> [R]
-diNewton 0 _ _ x = [x]
-diNewton n f e x
-  | abs fx < e = [x]
-  | fx' /= 0 = x : diNewton (n - 1) f e next
-  | otherwise = x : diNewton (n - 1) f e (x + e)
-  where
-    (fx, fx', _) = f (x, 1, 0)
-    next = x - (fx / fx')
