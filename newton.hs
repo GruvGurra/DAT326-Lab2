@@ -97,7 +97,7 @@ mulTri (f, f', f'') (g, g', g'') = (f * g, f' * g + f * g', f'' * g + f' * g' + 
 instance (AddGroup a, MulGroup a) => MulGroup (Tri a) where
   recip (f, f', f'') =
     let rf = recip f
-     in (recip f, negate f' * rf * rf, (f' * f' + f' * f' - f * f'') * rf * rf * rf)
+     in (rf, negate f' * rf * rf, (f' * f' + f' * f' - f * f'') * rf * rf * rf)
 
 -- (1/f, -f'/f^2, (2f'^2 - f*f'')/f^3)
 
