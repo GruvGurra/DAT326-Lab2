@@ -58,9 +58,9 @@ import Prelude hiding
 -- P(h) becomes false if we can find any operator for which the homomorphism doesn't hold, thus
 -- making ¬P(h) true.
 -- Let's check for the Mul operator
--- eval''(Mul e1 e2)) = eval''(e1) * eval''(e2)
--- We'll try eval''(Mul X (Mul X X))  # or more colloquially written x*x
--- eval''(Mul X (Mul X X)) = eval''(X) * eval''(X)
+-- eval'' is a homomorphism for Mul and * iff ∀e1. ∀e2. eval''(Mul e1 e2) = eval''(e1) * eval''(e2)
+-- We'll try eval''(Mul X X)  # or more colloquially written x*x
+-- eval''(Mul X X) = eval''(X) * eval''(X)
 -- Left hand side:
 -- eval''(Mul X X) = eval(deriv(deriv(Mul X X))) = eval(deriv(Mul (Const 2) X)) =
 -- = eval(Const 2) = 2
